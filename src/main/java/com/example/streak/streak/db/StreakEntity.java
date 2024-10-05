@@ -1,11 +1,16 @@
-package com.example.streak.user.db;
+package com.example.streak.streak.db;
 
+import com.example.streak.user.db.UserEntity;
 import com.example.streak.work.db.WorkEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.*;
-import lombok.*;
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,21 +20,18 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
-@Entity(name="user")
-public class UserEntity {
+@Entity(name="streak")
+public class StreakEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 45, nullable = false)
-    private String name;
+    private Integer checkNum;
 
-    @Column(length = 200, nullable = false)
-    private String password;
+    private Integer month;
 
-    private LocalDateTime createdAt;
-
-    @OneToMany
-    @JoinColumn(name="user_id")
-    private List<WorkEntity> work;
+    @ManyToOne
+    @JoinColumn(name="work_id")
+    @JsonIgnore
+    private WorkEntity work;
 }
