@@ -40,4 +40,10 @@ public class WorkEntity {
     private UserEntity user;
 
     private Integer orderNum;
+
+    private LocalDateTime lastUpdatedAt;
+
+    private Integer curStreak;
+
+    private Integer dayWeek;
 }

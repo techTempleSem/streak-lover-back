@@ -1,4 +1,4 @@
-package com.example.streak.user.model;
+package com.example.streak.work.model;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -10,11 +10,15 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class UserDTO {
+@JsonNaming(value= PropertyNamingStrategies.SnakeCaseStrategy.class)
+public class WorkDTO {
+    private Long id;
     private String name;
     private LocalDateTime createdAt;
+    private Integer orderNum;
+    private LocalDateTime lastUpdatedAt;
+    private Integer curStreak;
 }
