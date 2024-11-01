@@ -13,6 +13,7 @@ public class WorkConverter {
                 .createdAt(workEntity.getCreatedAt())
                 .orderNum(workEntity.getOrderNum())
                 .lastUpdatedAt(workEntity.getLastUpdatedAt())
-                .curStreak(workEntity.getCurStreak()).build();
+                .curStreak(workEntity.getCurStreak())
+                .dayWeek(workEntity.getDayWeek()).build();
     }
 }

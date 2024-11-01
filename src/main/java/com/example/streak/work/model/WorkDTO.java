@@ -21,4 +21,5 @@ public class WorkDTO {
     private Integer orderNum;
     private LocalDateTime lastUpdatedAt;
     private Integer curStreak;
+    private Integer dayWeek;
 }

@@ -2,6 +2,7 @@ package com.example.streak.work.db;
 
 import com.example.streak.streak.db.StreakEntity;
 import com.example.streak.user.db.UserEntity;
+import com.example.streak.work.db.enums.WorkState;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -46,4 +47,8 @@ public class WorkEntity {
     private Integer curStreak;
 
     private Integer dayWeek;
+
+    @Column(columnDefinition = "VARCHAR(45)")
+    @Enumerated(EnumType.STRING)
+    private WorkState state;
 }

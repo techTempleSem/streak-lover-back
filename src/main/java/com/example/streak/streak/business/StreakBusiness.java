@@ -76,13 +76,13 @@ public class StreakBusiness {
 
     public int weekToNumber(Map<String, Boolean> week){
         int num = 0;
-        if(week.get("월")) num += 1;
-        if(week.get("화")) num += 2;
-        if(week.get("수")) num += 4;
-        if(week.get("목")) num += 8;
-        if(week.get("금")) num += 16;
-        if(week.get("토")) num += 32;
-        if(week.get("일")) num += 64;
+        if(week.get("일")) num += 1;
+        if(week.get("월")) num += 2;
+        if(week.get("화")) num += 4;
+        if(week.get("수")) num += 8;
+        if(week.get("목")) num += 16;
+        if(week.get("금")) num += 32;
+        if(week.get("토")) num += 64;
         return num;
     }
 }

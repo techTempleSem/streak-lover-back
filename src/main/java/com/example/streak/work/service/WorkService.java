@@ -1,11 +1,13 @@
 package com.example.streak.work.service;
 
 import com.example.streak.streak.business.StreakBusiness;
+import com.example.streak.streak.db.StreakEntity;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
 import com.example.streak.user.service.UserService;
 import com.example.streak.work.db.WorkEntity;
 import com.example.streak.work.db.WorkRepository;
+import com.example.streak.work.db.enums.WorkState;
 import com.example.streak.work.model.WorkDTO;
 import com.example.streak.work.model.WorkRegisterRequest;
 import jakarta.validation.Valid;
@@ -14,8 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -30,9 +31,13 @@ public class WorkService {
             Long userId,
             Long workOrder
     ) throws Exception {
-        Optional<WorkEntity> work = workRepository.findFirstByUserIdAndOrderNum(userId, workOrder);
+        Optional<WorkEntity> work = workRepository.findById(workOrder);
         if(work.isEmpty()){
             throw new Exception("해당 작업이 없습니다.");
+        }
+
+        if(!Objects.equals(work.get().getUser().getId(), userId)){
+            throw new Exception("해당 유저가 아닙니다.");
         }
 
         if(!streakBusiness.isValidExtend(work.get().getId())){
@@ -66,9 +71,47 @@ public class WorkService {
                 .orderNum(size + 1)
                 .lastUpdatedAt(LocalDateTime.of(1970,1,1,0,0))
                 .curStreak(0)
-                .dayWeek(dayWeek).build();
+                .dayWeek(dayWeek)
+                .state(WorkState.NORMAL).build();
 
         workRepository.save(workEntity);
         return  "성공!";
+    }
+
+    public WorkEntity find(Long userId, Long streakId) {
+        Optional<WorkEntity> _workEntity =workRepository.findById(streakId);
+        if(_workEntity.isEmpty()){
+            return null;
+        }
+        WorkEntity workEntity = _workEntity.get();
+
+        if(!Objects.equals(workEntity.getUser().getId(), userId)) {
+            return null;
+        }
+        Collections.sort(workEntity.getStreak(), new Comparator<StreakEntity>() {
+            @Override
+            public int compare(StreakEntity p1, StreakEntity p2) {
+                return Integer.compare(p2.getMonth(), p1.getMonth());
+            }
+        });
+
+        if(workEntity.getStreak().size() > 15){
+            workEntity.setStreak(workEntity.getStreak().subList(0,15));
+        }
+        return workEntity;
+    }
+
+    public void delete(Long userId, Long streakId) {
+        Optional<WorkEntity> _workEntity =workRepository.findById(streakId);
+        if(_workEntity.isEmpty()){
+            return;
+        }
+        WorkEntity workEntity = _workEntity.get();
+
+        if(!Objects.equals(workEntity.getUser().getId(), userId)) {
+            return;
+        }
+        workEntity.setState(WorkState.DELETE);
+        workRepository.save(workEntity);
     }
 }

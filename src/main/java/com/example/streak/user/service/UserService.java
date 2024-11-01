@@ -1,9 +1,13 @@
 package com.example.streak.user.service;
 
+import com.example.streak.email.db.EmailAuthEntity;
+import com.example.streak.email.db.EmailRepository;
+import com.example.streak.email.service.EmailService;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
 import com.example.streak.user.model.UserRegisterRequest;
 import com.example.streak.work.db.WorkEntity;
+import com.example.streak.work.db.enums.WorkState;
 import com.example.streak.work.model.WorkDTO;
 import com.example.streak.work.service.WorkConverter;
 import lombok.RequiredArgsConstructor;
@@ -22,8 +26,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final WorkConverter workConverter;
+    private final EmailRepository emailRepository;
 
     public String register(UserRegisterRequest userRegisterRequest){
+        Optional<EmailAuthEntity> _emailAuthEntity = emailRepository.findByEmail(userRegisterRequest.getName());
+        if(_emailAuthEntity.isEmpty() || !_emailAuthEntity.get().getIsAuth()) {
+            return "인증을 진행해 주세요";
+        }
+
         String encryptPassword = encrypt(userRegisterRequest.getPassword());
         UserEntity user = UserEntity.builder()
                 .createdAt(LocalDateTime.now())
@@ -38,7 +48,9 @@ public class UserService {
         if(_userEntity.isEmpty()) return null;
         UserEntity userEntity = _userEntity.get();
         List<WorkEntity> works = userEntity.getWork();
-        List<WorkDTO> workDTOs = works.stream().map(work -> workConverter.toDTO(work)).toList();
+        List<WorkDTO> workDTOs = works.stream().filter(work -> {
+            return work.getState() != WorkState.DELETE;
+        }).map(work -> workConverter.toDTO(work)).toList();
         return workDTOs;
     }
 }

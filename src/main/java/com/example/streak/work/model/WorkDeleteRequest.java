@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class WorkExtendRequest {
+public class WorkDeleteRequest {
     private Long id;
 }
