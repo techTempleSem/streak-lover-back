@@ -4,13 +4,18 @@ import com.example.streak.email.db.EmailAuthEntity;
 import com.example.streak.email.db.EmailRepository;
 import com.example.streak.email.model.EmailAuthRequest;
 import com.example.streak.email.model.EmailRequest;
+import com.example.streak.user.db.UserEntity;
+import com.example.streak.user.db.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -24,11 +29,14 @@ import java.util.Random;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@EnableAsync
 public class EmailService {
     private final JavaMailSender javaMailSender;
     private final SpringTemplateEngine springTemplateEngine;
     private final EmailRepository emailRepository;
+    private final UserRepository userRepository;
 
+    @Async
     public void sendMail(
             EmailRequest emailRequest
     ){
@@ -100,5 +108,10 @@ public class EmailService {
         }
         email.setIsAuth(Boolean.TRUE);
         return "성공!";
+    }
+
+    public boolean checkValid(@Email String email) {
+        Optional<UserEntity> userEntity = userRepository.findFirstByName(email);
+        return userEntity.isEmpty();
     }
 }

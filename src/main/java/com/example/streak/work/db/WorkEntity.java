@@ -29,6 +29,8 @@ public class WorkEntity {
     @Column(length = 45, nullable = false)
     private String name;
 
+    private String descript;
+
     private LocalDateTime createdAt;
 
     @OneToMany

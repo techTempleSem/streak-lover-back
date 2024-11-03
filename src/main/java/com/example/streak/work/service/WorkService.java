@@ -1,5 +1,7 @@
 package com.example.streak.work.service;
 
+import com.example.streak.common.error.ErrorCode;
+import com.example.streak.common.exception.ApiException;
 import com.example.streak.streak.business.StreakBusiness;
 import com.example.streak.streak.db.StreakEntity;
 import com.example.streak.user.db.UserEntity;
@@ -66,6 +68,7 @@ public class WorkService {
 
         WorkEntity workEntity = WorkEntity.builder()
                 .name(workRegisterRequest.getTitle())
+                .descript(workRegisterRequest.getDescription())
                 .createdAt(LocalDateTime.now())
                 .user(user)
                 .orderNum(size + 1)
@@ -81,12 +84,12 @@ public class WorkService {
     public WorkEntity find(Long userId, Long streakId) {
         Optional<WorkEntity> _workEntity =workRepository.findById(streakId);
         if(_workEntity.isEmpty()){
-            return null;
+            throw new ApiException(ErrorCode.BAD_REQUEST, "존재하지 않는 작업입니다.");
         }
         WorkEntity workEntity = _workEntity.get();
 
         if(!Objects.equals(workEntity.getUser().getId(), userId)) {
-            return null;
+            throw new ApiException(ErrorCode.BAD_REQUEST, "올바른 유저가 아닙니다.");
         }
         Collections.sort(workEntity.getStreak(), new Comparator<StreakEntity>() {
             @Override

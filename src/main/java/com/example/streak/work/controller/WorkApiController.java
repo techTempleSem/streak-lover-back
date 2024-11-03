@@ -1,5 +1,8 @@
 package com.example.streak.work.controller;
 
+import com.example.streak.common.api.Api;
+import com.example.streak.common.error.ErrorCode;
+import com.example.streak.common.exception.ApiException;
 import com.example.streak.streak.db.StreakEntity;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
@@ -62,15 +65,15 @@ public class WorkApiController {
     }
 
     @GetMapping("/{streakId}")
-    public WorkEntity getStreak(
+    public Api<WorkEntity> getStreak(
             @PathVariable Long streakId,
             HttpSession httpSession
     ){
         Long id = (Long)(httpSession.getAttribute("USER"));
         Optional<UserEntity> userEntity = userRepository.findById(id);
-        if(userEntity.isEmpty()) return null;
+        if(userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
 
-        return workService.find(userEntity.get().getId(), streakId);
+        return Api.OK(workService.find(userEntity.get().getId(), streakId));
     }
 
     @PostMapping("/delete")

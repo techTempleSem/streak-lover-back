@@ -1,5 +1,8 @@
 package com.example.streak.user.controller;
 
+import com.example.streak.common.api.Api;
+import com.example.streak.common.error.ErrorCode;
+import com.example.streak.common.exception.ApiException;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
 import com.example.streak.user.model.UserDTO;

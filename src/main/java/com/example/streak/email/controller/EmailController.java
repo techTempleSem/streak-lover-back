@@ -21,6 +21,9 @@ public class EmailController {
             @RequestBody
             EmailRequest emailRequest
     ){
+        if(!emailService.checkValid(emailRequest.getEmail())){
+            return "이미 있는 계정입니다.";
+        }
         emailService.sendMail(emailRequest);
         return "";
     }
