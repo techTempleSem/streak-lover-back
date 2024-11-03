@@ -60,11 +60,23 @@ public class WorkService {
         if(_user.isEmpty()) return "로그인이 필요합니다";
         UserEntity user = _user.get();
 
-        log.info("=====");
-        log.info(String.valueOf(workRegisterRequest.getSelectedDays().size()));
-        log.info("=====");
-
         int dayWeek = streakBusiness.weekToNumber(workRegisterRequest.getSelectedDays());
+
+        if(dayWeek == 0) return "요일이 적어도 하나는 체크되어 있어야 합니다.";
+
+        if(workRegisterRequest.getWorkNum() == null) log.info("null");
+        else log.info("not null");
+
+        if(workRegisterRequest.getWorkNum() != null){
+            Optional<WorkEntity> _work = workRepository.findById(workRegisterRequest.getWorkNum());
+            if(_work.isEmpty()) return "에러!";
+            WorkEntity work = _work.get();
+            work.setName(workRegisterRequest.getTitle());
+            work.setDescript(workRegisterRequest.getDescription());
+            work.setDayWeek(dayWeek);
+            workRepository.save(work);
+            return "성공!";
+        }
 
         WorkEntity workEntity = WorkEntity.builder()
                 .name(workRegisterRequest.getTitle())
@@ -78,7 +90,7 @@ public class WorkService {
                 .state(WorkState.NORMAL).build();
 
         workRepository.save(workEntity);
-        return  "성공!";
+        return "성공!";
     }
 
     public WorkEntity find(Long userId, Long streakId) {

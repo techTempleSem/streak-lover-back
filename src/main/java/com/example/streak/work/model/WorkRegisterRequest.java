@@ -17,6 +17,7 @@ public class WorkRegisterRequest {
     private String title;
     private String description;
 
-    @JsonProperty("selectedDays")
     private Map<String, Boolean> selectedDays;
+
+    private Long workNum;
 }
