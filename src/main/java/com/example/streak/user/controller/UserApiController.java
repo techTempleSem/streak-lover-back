@@ -3,9 +3,14 @@ package com.example.streak.user.controller;
 import com.example.streak.common.api.Api;
 import com.example.streak.common.error.ErrorCode;
 import com.example.streak.common.exception.ApiException;
+import com.example.streak.firebase.db.FirebaseEntity;
+import com.example.streak.firebase.db.FirebaseRepository;
+import com.example.streak.firebase.service.FirebaseService;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
 import com.example.streak.user.model.UserDTO;
+import com.example.streak.user.model.UserRegisterRequest;
+import com.example.streak.user.model.UserTokenRequest;
 import com.example.streak.user.service.UserConverter;
 import com.example.streak.user.service.UserService;
 import com.example.streak.work.db.WorkEntity;
@@ -31,6 +36,7 @@ public class UserApiController {
     private final UserRepository userRepository;
     private final UserService userService;
     private final UserConverter userConverter;
+    private final FirebaseService firebaseService;
 
     @GetMapping("/work")
     public List<WorkDTO> work(
@@ -53,8 +59,23 @@ public class UserApiController {
     ){
         Long id = (Long)(httpSession.getAttribute("USER"));
         Optional<UserEntity> _userEntity = userRepository.findById(id);
-        if(_userEntity.isEmpty()) return null;
+        if(_userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
         UserEntity userEntity = _userEntity.get();
         return userConverter.toDTO(userEntity);
+    }
+
+    @PostMapping("/firebase-token")
+    public Api<String> token(
+            @Valid
+            @RequestBody
+            UserTokenRequest userTokenRequest,
+            HttpSession httpSession
+    ){
+        Long id = (Long)(httpSession.getAttribute("USER"));
+        Optional<UserEntity> _userEntity = userRepository.findById(id);
+        if(_userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
+        UserEntity userEntity = _userEntity.get();
+
+        return firebaseService.save(userEntity, userTokenRequest);
     }
 }

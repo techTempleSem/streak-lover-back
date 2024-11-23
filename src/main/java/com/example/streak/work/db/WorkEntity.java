@@ -53,4 +53,7 @@ public class WorkEntity {
     @Column(columnDefinition = "VARCHAR(45)")
     @Enumerated(EnumType.STRING)
     private WorkState state;
+
+    private Integer money;
+    private Integer repair;
 }

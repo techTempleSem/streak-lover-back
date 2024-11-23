@@ -14,6 +14,8 @@ public class WorkConverter {
                 .orderNum(workEntity.getOrderNum())
                 .lastUpdatedAt(workEntity.getLastUpdatedAt())
                 .curStreak(workEntity.getCurStreak())
-                .dayWeek(workEntity.getDayWeek()).build();
+                .dayWeek(workEntity.getDayWeek())
+                .money(workEntity.getMoney())
+                .repair(workEntity.getRepair()).build();
     }
 }

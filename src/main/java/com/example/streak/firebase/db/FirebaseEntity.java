@@ -1,14 +1,16 @@
-package com.example.streak.user.db;
+package com.example.streak.firebase.db;
 
-import com.example.streak.firebase.db.FirebaseEntity;
+import com.example.streak.user.db.UserEntity;
 import com.example.streak.work.db.WorkEntity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -16,25 +18,17 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 @JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
-@Entity(name="user")
-public class UserEntity {
+@Entity(name="firebase")
+public class FirebaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 45, nullable = false)
-    private String name;
-
     @Column(length = 200, nullable = false)
-    private String password;
+    private String token;
 
-    private LocalDateTime createdAt;
-
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name="user_id")
-    private List<WorkEntity> work;
-
-    @OneToMany
-    @JoinColumn(name="user_id")
-    private List<FirebaseEntity> firebase;
+    @JsonIgnore
+    private UserEntity user;
 }

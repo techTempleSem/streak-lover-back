@@ -22,4 +22,6 @@ public class WorkDTO {
     private LocalDateTime lastUpdatedAt;
     private Integer curStreak;
     private Integer dayWeek;
+    private Integer money;
+    private Integer repair;
 }

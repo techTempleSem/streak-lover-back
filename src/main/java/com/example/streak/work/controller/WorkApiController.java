@@ -7,10 +7,7 @@ import com.example.streak.streak.db.StreakEntity;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
 import com.example.streak.work.db.WorkEntity;
-import com.example.streak.work.model.WorkDTO;
-import com.example.streak.work.model.WorkDeleteRequest;
-import com.example.streak.work.model.WorkExtendRequest;
-import com.example.streak.work.model.WorkRegisterRequest;
+import com.example.streak.work.model.*;
 import com.example.streak.work.service.WorkService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -85,8 +82,22 @@ public class WorkApiController {
     ){
         Long id = (Long)(httpSession.getAttribute("USER"));
         Optional<UserEntity> userEntity = userRepository.findById(id);
-        if(userEntity.isEmpty()) return;
+        if(userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
 
         workService.delete(userEntity.get().getId(), workDeleteRequest.getId());
+    }
+
+    @PostMapping("/repair")
+    public void repair(
+            @Valid
+            @RequestBody
+            WorkRepairRequest workRepairRequest,
+            HttpSession httpSession
+    ){
+        Long id = (Long)(httpSession.getAttribute("USER"));
+        Optional<UserEntity> userEntity = userRepository.findById(id);
+        if(userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
+
+        workService.repair(userEntity.get(), workRepairRequest.getId());
     }
 }

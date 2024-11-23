@@ -44,21 +44,28 @@ public class StreakBusiness {
         return false;
     }
 
-    public void extend(Long workId){
-        LocalDate now = LocalDate.now();
+    public void update(WorkEntity work){
+        LocalDateTime lastTime = work.getLastUpdatedAt();
+        LocalDate lastDay = LocalDate.from(lastTime);
+        int streakCount = work.getCurStreak();
+        while(lastDay.isBefore(LocalDate.now().minusDays(1))){
+            lastDay = lastDay.plusDays(1);
+            int week = (lastDay.getDayOfWeek().getValue()) % 7;
+            if((work.getDayWeek() & (1 << week)) != 0){
+                 break;
+            }
+            lastTime = lastTime.plusDays(1);
+            streakCount++;
+        }
+        work.setLastUpdatedAt(lastTime);
+        work.setCurStreak(streakCount);
+    }
+
+    public void updateDate(WorkEntity work, LocalDate now){
         int month = now.getYear() * 100 + now.getMonthValue();
         int dayBit = (1 << (now.getDayOfMonth() - 1));
 
-        Optional<StreakEntity> _streak = streakRepository.findFirstByWorkIdOrderByMonthDesc(workId);
-        WorkEntity work = workRepository.findById(workId).get();
-        LocalDateTime lastUpdatedAt = work.getLastUpdatedAt();
-        if(isYesterday(work.getLastUpdatedAt())) {
-            work.setCurStreak(work.getCurStreak() + 1);
-        } else {
-            work.setCurStreak(1);
-        }
-        work.setLastUpdatedAt(LocalDateTime.now());
-        workRepository.save(work);
+        Optional<StreakEntity> _streak = streakRepository.findFirstByWorkIdOrderByMonthDesc(work.getId());
         if(_streak.isEmpty() || _streak.get().getMonth() != month) {
             StreakEntity streak = StreakEntity.builder()
                     .checkNum(dayBit)
@@ -72,6 +79,23 @@ public class StreakBusiness {
         StreakEntity streak = _streak.get();
         streak.setCheckNum(streak.getCheckNum() | dayBit);
         streakRepository.save(streak);
+    }
+
+    public void extend(Long workId){
+
+        WorkEntity work = workRepository.findById(workId).get();
+        LocalDateTime lastUpdatedAt = work.getLastUpdatedAt();
+        update(work);
+        if(isYesterday(work.getLastUpdatedAt())) {
+            work.setCurStreak(work.getCurStreak() + 1);
+        } else {
+            work.setCurStreak(1);
+        }
+        work.setLastUpdatedAt(LocalDateTime.now());
+        work.setMoney(work.getMoney() + 100);
+        workRepository.save(work);
+
+        updateDate(work, LocalDate.now());
     }
 
     public int weekToNumber(Map<String, Boolean> week){

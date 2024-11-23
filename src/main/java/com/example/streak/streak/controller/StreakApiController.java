@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/open-api/user")
+@RequestMapping("/api/streak")
 @RequiredArgsConstructor
 public class StreakApiController {
 }

@@ -4,6 +4,7 @@ import com.example.streak.common.error.ErrorCode;
 import com.example.streak.common.exception.ApiException;
 import com.example.streak.streak.business.StreakBusiness;
 import com.example.streak.streak.db.StreakEntity;
+import com.example.streak.streak.db.StreakRepository;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
 import com.example.streak.user.service.UserService;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -28,6 +30,7 @@ public class WorkService {
     private final StreakBusiness streakBusiness;
     private final UserService userService;
     private final UserRepository userRepository;
+    private final StreakRepository streakRepository;
 
     public List<WorkDTO> extendStreak(
             Long userId,
@@ -128,5 +131,27 @@ public class WorkService {
         }
         workEntity.setState(WorkState.DELETE);
         workRepository.save(workEntity);
+    }
+
+    public void repair(UserEntity user, Long workId) {
+        Optional<WorkEntity> _work = workRepository.findById(workId);
+        if(_work.isEmpty()) throw new ApiException(ErrorCode.BAD_REQUEST, "일정이 없습니다");
+        WorkEntity work = _work.get();
+
+        if(work.getRepair()<=0) throw new ApiException(ErrorCode.BAD_REQUEST, "스트릭 리페어가 없습니다");
+
+        if(work.getUser() != user) throw new ApiException(ErrorCode.BAD_REQUEST, "적절한 유저가 아닙니다");
+        streakBusiness.update(work);
+
+        LocalDate updateDate = LocalDate.from(work.getLastUpdatedAt());
+        updateDate = updateDate.plusDays(1);
+        int week = (updateDate.getDayOfWeek().getValue()) % 7;
+        if((work.getDayWeek() & (1 << week)) == 0){
+            throw new ApiException(ErrorCode.BAD_REQUEST, "수리할 일정이 없습니다");
+        }
+
+        streakBusiness.updateDate(work, updateDate);
+        work.setRepair(work.getRepair() - 1);
+        workRepository.save(work);
     }
 }
