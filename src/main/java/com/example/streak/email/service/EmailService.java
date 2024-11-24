@@ -47,7 +47,11 @@ public class EmailService {
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
             mimeMessageHelper.setTo(emailRequest.getEmail());
-            mimeMessageHelper.setSubject("스트릭 서비스 회원가입 메일입니다");
+            if (emailRequest.getType()=="email"){
+                mimeMessageHelper.setSubject("스트릭 서비스 회원가입 메일입니다");
+            } else if(emailRequest.getType()=="password") {
+                mimeMessageHelper.setSubject("스트릭 서비스 임시 비밀번호 메일입니다");
+            }
             mimeMessageHelper.setText(setContext(emailRequest.getType(), code), true);
             javaMailSender.send(mimeMessage);
 
@@ -57,6 +61,10 @@ public class EmailService {
 
             if(Objects.equals(emailRequest.getType(), "email")){
                 emailRepository.save(emailRequest.getEmail(), code);
+            } else if(Objects.equals(emailRequest.getType(), "password")){
+                UserEntity userEntity = userRepository.findFirstByName(emailRequest.getEmail()).get();
+                userEntity.setTempPassword(code);
+                userRepository.save(userEntity);
             }
 
             log.info("Success");

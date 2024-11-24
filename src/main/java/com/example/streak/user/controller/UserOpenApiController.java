@@ -1,8 +1,11 @@
 package com.example.streak.user.controller;
 
+import com.example.streak.common.error.ErrorCode;
+import com.example.streak.common.exception.ApiException;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
 import com.example.streak.user.model.UserLoginRequest;
+import com.example.streak.user.model.UserPasswordRequest;
 import com.example.streak.user.model.UserRegisterRequest;
 import com.example.streak.user.service.UserService;
 import com.example.streak.work.db.WorkEntity;
@@ -13,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.example.streak.utils.Encrypt.encrypt;
@@ -35,15 +39,27 @@ public class UserOpenApiController {
     ){
         String encryptPassword = encrypt(userLoginRequest.getPassword());
 
-        Optional<UserEntity> user = userRepository.findFirstByNameAndPassword(userLoginRequest.getName(),
-                encryptPassword);
-
-        if(user.isPresent()){
-            httpSession.setAttribute("USER", user.get().getId());
-            return "YES";
-        } else {
-            return "NO";
+        Optional<UserEntity> _user = userRepository.findFirstByName(userLoginRequest.getName());
+        if(_user.isEmpty()){
+            throw new ApiException(ErrorCode.BAD_REQUEST,"아이디가 없습니다");
         }
+        UserEntity user = _user.get();
+        if(!Objects.equals(user.getPassword(), encryptPassword) && !Objects.equals(user.getTempPassword(), userLoginRequest.getPassword())){
+            throw new ApiException(ErrorCode.BAD_REQUEST,"비밀번호가 틀렸습니다");
+        }
+
+        log.info(user.getTempPassword());
+        log.info(encryptPassword);
+
+        if(Objects.equals(user.getTempPassword(), userLoginRequest.getPassword())){
+            String encryptTempPassword = encrypt(userLoginRequest.getPassword());
+            user.setPassword(encryptTempPassword);
+        }
+        user.setTempPassword(null);
+        userRepository.save(user);
+        httpSession.setAttribute("USER", user.getId());
+
+        return "YES";
     }
 
     @PostMapping("/register")
@@ -60,6 +76,23 @@ public class UserOpenApiController {
             return "이미 있는 계정입니다.";
         } else {
             return userService.register(userRegisterRequest);
+        }
+    }
+
+    @PostMapping("/password-reset")
+    public String password(
+            @Valid
+            @RequestBody
+            UserPasswordRequest userPasswordRequest,
+
+            HttpSession httpSession
+    ){
+        Optional<UserEntity> user = userRepository.findFirstByName(userPasswordRequest.getEmail());
+
+        if(user.isEmpty()){
+            return "없는 계정입니다";
+        } else {
+            return userService.password(userPasswordRequest, user.get());
         }
     }
 }

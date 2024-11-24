@@ -28,6 +28,9 @@ public class UserEntity {
     @Column(length = 200, nullable = false)
     private String password;
 
+    @Column(length = 200, nullable = false)
+    private String tempPassword;
+
     private LocalDateTime createdAt;
 
     @OneToMany

@@ -100,4 +100,18 @@ public class WorkApiController {
 
         workService.repair(userEntity.get(), workRepairRequest.getId());
     }
+
+    @PostMapping("/repair-buy")
+    public void repairBuy(
+            @Valid
+            @RequestBody
+            WorkRepairRequest workRepairRequest,
+            HttpSession httpSession
+    ){
+        Long id = (Long)(httpSession.getAttribute("USER"));
+        Optional<UserEntity> userEntity = userRepository.findById(id);
+        if(userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
+
+        workService.repairBuy(userEntity.get(), workRepairRequest.getId());
+    }
 }

@@ -154,4 +154,18 @@ public class WorkService {
         work.setRepair(work.getRepair() - 1);
         workRepository.save(work);
     }
+
+    public void repairBuy(UserEntity user, Long workId) {
+        Optional<WorkEntity> _work = workRepository.findById(workId);
+        if(_work.isEmpty()) throw new ApiException(ErrorCode.BAD_REQUEST, "일정이 없습니다");
+        WorkEntity work = _work.get();
+
+        if(work.getMoney()<=3000) throw new ApiException(ErrorCode.BAD_REQUEST, "돈이 없습니다");
+
+        if(work.getUser() != user) throw new ApiException(ErrorCode.BAD_REQUEST, "적절한 유저가 아닙니다");
+
+        work.setRepair(work.getRepair() + 1);
+        work.setMoney(work.getMoney() - 3000);
+        workRepository.save(work);
+    }
 }

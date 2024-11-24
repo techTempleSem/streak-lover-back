@@ -8,6 +8,7 @@ import com.example.streak.firebase.db.FirebaseRepository;
 import com.example.streak.firebase.service.FirebaseService;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
+import com.example.streak.user.model.UserChangeRegister;
 import com.example.streak.user.model.UserDTO;
 import com.example.streak.user.model.UserRegisterRequest;
 import com.example.streak.user.model.UserTokenRequest;
@@ -62,6 +63,21 @@ public class UserApiController {
         if(_userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
         UserEntity userEntity = _userEntity.get();
         return userConverter.toDTO(userEntity);
+    }
+
+    @PostMapping("/change")
+    public Api<String> change(
+            @Valid
+            @RequestBody
+            UserChangeRegister userChangeRegister,
+            HttpSession httpSession
+    ){
+        Long id = (Long)(httpSession.getAttribute("USER"));
+        Optional<UserEntity> _userEntity = userRepository.findById(id);
+        if(_userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
+        UserEntity userEntity = _userEntity.get();
+
+        return Api.OK(userService.change(userEntity, userChangeRegister));
     }
 
     @PostMapping("/firebase-token")
