@@ -8,10 +8,7 @@ import com.example.streak.firebase.db.FirebaseRepository;
 import com.example.streak.firebase.service.FirebaseService;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
-import com.example.streak.user.model.UserChangeRegister;
-import com.example.streak.user.model.UserDTO;
-import com.example.streak.user.model.UserRegisterRequest;
-import com.example.streak.user.model.UserTokenRequest;
+import com.example.streak.user.model.*;
 import com.example.streak.user.service.UserConverter;
 import com.example.streak.user.service.UserService;
 import com.example.streak.work.db.WorkEntity;
@@ -93,5 +90,20 @@ public class UserApiController {
         UserEntity userEntity = _userEntity.get();
 
         return firebaseService.save(userEntity, userTokenRequest);
+    }
+
+    @PostMapping("/alert-time")
+    public Api<String> alertTime(
+            @Valid
+            @RequestBody
+            UserAlertTimeRequest userAlertTimeRequest,
+            HttpSession httpSession
+    ){
+        Long id = (Long)(httpSession.getAttribute("USER"));
+        Optional<UserEntity> _userEntity = userRepository.findById(id);
+        if(_userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
+        UserEntity userEntity = _userEntity.get();
+
+        return userService.setAlertTime(userEntity, userAlertTimeRequest.getAlertTime());
     }
 }

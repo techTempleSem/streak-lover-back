@@ -60,19 +60,23 @@ public class WorkService {
     ) {
         int size = userService.getWorks(id).size();
         Optional<UserEntity> _user = userRepository.findById(id);
-        if(_user.isEmpty()) return "로그인이 필요합니다";
+        if(_user.isEmpty()) throw new ApiException(ErrorCode.BAD_REQUEST, "해당하는 유저가 없습니다.");
         UserEntity user = _user.get();
+
+        if(user.getWorkCount() <= size){
+            throw new ApiException(ErrorCode.BAD_REQUEST,"만들 수 있는 개수를 초과했습니다.");
+        }
 
         int dayWeek = streakBusiness.weekToNumber(workRegisterRequest.getSelectedDays());
 
-        if(dayWeek == 0) return "요일이 적어도 하나는 체크되어 있어야 합니다.";
+        if(dayWeek == 0) throw new ApiException(ErrorCode.BAD_REQUEST,"요일이 적어도 하나는 체크되어 있어야 합니다.");
 
         if(workRegisterRequest.getWorkNum() == null) log.info("null");
         else log.info("not null");
 
         if(workRegisterRequest.getWorkNum() != null){
             Optional<WorkEntity> _work = workRepository.findById(workRegisterRequest.getWorkNum());
-            if(_work.isEmpty()) return "에러!";
+            if(_work.isEmpty()) throw new ApiException(ErrorCode.BAD_REQUEST,"에러!");
             WorkEntity work = _work.get();
             work.setName(workRegisterRequest.getTitle());
             work.setDescript(workRegisterRequest.getDescription());
@@ -90,6 +94,8 @@ public class WorkService {
                 .lastUpdatedAt(LocalDateTime.of(1970,1,1,0,0))
                 .curStreak(0)
                 .dayWeek(dayWeek)
+                .money(0)
+                .repair(0)
                 .state(WorkState.NORMAL).build();
 
         workRepository.save(workEntity);
@@ -149,6 +155,9 @@ public class WorkService {
         if((work.getDayWeek() & (1 << week)) == 0){
             throw new ApiException(ErrorCode.BAD_REQUEST, "수리할 일정이 없습니다");
         }
+
+        work.setLastUpdatedAt(work.getLastUpdatedAt().plusDays(1));
+        work.setCurStreak(work.getCurStreak()+1);
 
         streakBusiness.updateDate(work, updateDate);
         work.setRepair(work.getRepair() - 1);

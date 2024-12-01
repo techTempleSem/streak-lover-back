@@ -2,10 +2,12 @@ package com.example.streak.email.controller;
 
 import com.example.streak.email.db.EmailAuthEntity;
 import com.example.streak.email.model.EmailAuthRequest;
+import com.example.streak.email.model.EmailInquiryRequest;
 import com.example.streak.email.model.EmailRequest;
 import com.example.streak.email.service.EmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,7 +15,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/open-api/mail")
 @RequiredArgsConstructor
-public class EmailController {
+@Slf4j
+public class EmailOpenApiController {
     private final EmailService emailService;
     @PostMapping("/register")
     public String auth(
@@ -39,12 +42,14 @@ public class EmailController {
     @GetMapping("/all")
     public List<EmailAuthEntity> auth(
     ) {
-        return emailService.findAll();
+//        return emailService.findAll();
+        return null;
     }
 
     @GetMapping("/clear")
     public String clearDummy(
     ) {
-        return emailService.clearDummy();
+//        return emailService.clearDummy();
+        return null;
     }
 }

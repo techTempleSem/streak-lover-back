@@ -1,13 +1,18 @@
 package com.example.streak.user.service;
 
+import com.example.streak.common.api.Api;
 import com.example.streak.common.error.ErrorCode;
 import com.example.streak.common.exception.ApiException;
 import com.example.streak.email.db.EmailAuthEntity;
 import com.example.streak.email.db.EmailRepository;
 import com.example.streak.email.model.EmailRequest;
 import com.example.streak.email.service.EmailService;
+import com.example.streak.firebase.db.FirebaseEntity;
+import com.example.streak.firebase.service.FirebaseService;
+import com.example.streak.streak.business.StreakBusiness;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
+import com.example.streak.user.db.enums.UserState;
 import com.example.streak.user.model.UserChangeRegister;
 import com.example.streak.user.model.UserPasswordRequest;
 import com.example.streak.user.model.UserRegisterRequest;
@@ -15,16 +20,18 @@ import com.example.streak.work.db.WorkEntity;
 import com.example.streak.work.db.enums.WorkState;
 import com.example.streak.work.model.WorkDTO;
 import com.example.streak.work.service.WorkConverter;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.example.streak.utils.Encrypt.encrypt;
 
@@ -37,6 +44,8 @@ public class UserService {
     private final WorkConverter workConverter;
     private final EmailRepository emailRepository;
     private final EmailService emailService;
+    private final StreakBusiness streakBusiness;
+    private final FirebaseService firebaseService;
 
     public String register(UserRegisterRequest userRegisterRequest){
         Optional<EmailAuthEntity> _emailAuthEntity = emailRepository.findByEmail(userRegisterRequest.getName());
@@ -48,7 +57,10 @@ public class UserService {
         UserEntity user = UserEntity.builder()
                 .createdAt(LocalDateTime.now())
                 .name(userRegisterRequest.getName())
-                .password(encryptPassword).build();
+                .password(encryptPassword)
+                .alertTime("22:00")
+                .state(UserState.NORMAL)
+                .workCount(5).build();
         userRepository.save(user);
         return "성공적으로 등록되었습니다!";
     }
@@ -92,5 +104,39 @@ public class UserService {
                 .type("password").build();
         emailService.sendMail(emailRequest);
         return "성공!";
+    }
+
+    @Transactional
+    public void alert() {
+        List<UserEntity> userEntityList = userRepository.findAll();
+        int nowTime = LocalDateTime.now().getHour()*60+LocalDateTime.now().getMinute();
+        if(nowTime>=1430) nowTime -= 1440;
+        int finalNowTime = nowTime;
+        userEntityList.forEach((user) -> {
+            String[] hour = user.getAlertTime().split(":");
+            int setTime = Integer.parseInt(hour[0])*60+Integer.parseInt(hour[1]);
+            log.info("{}",setTime);
+            log.info("{}",finalNowTime);
+            if(Math.abs(setTime - finalNowTime) > 10){
+                return;
+            }
+            Hibernate.initialize(user.getWork());
+            List<WorkEntity> workEntityList = user.getWork();
+            boolean isAlert = workEntityList.stream().anyMatch((work)->{
+                return streakBusiness.isValidExtend(work.getId());
+            });
+            if(isAlert){
+                List<FirebaseEntity> firebaseEntityList = user.getFirebase();
+                firebaseEntityList.forEach((firebase) -> {
+                    firebaseService.alert(firebase.getToken(), "오늘 스트릭이 만료됩니다!", "남은 시간이 얼마 없습니다. 스트릭을 유지하려면 지금 목표를 완료하세요!");
+                });
+            }
+        });
+    }
+
+    public Api<String> setAlertTime(UserEntity user, String alertTime) {
+        user.setAlertTime(alertTime);
+        userRepository.save(user);
+        return Api.OK("설정되었습니다");
     }
 }

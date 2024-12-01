@@ -1,12 +1,15 @@
 package com.example.streak.user.controller;
 
+import com.example.streak.common.api.Api;
 import com.example.streak.common.error.ErrorCode;
 import com.example.streak.common.exception.ApiException;
 import com.example.streak.user.db.UserEntity;
 import com.example.streak.user.db.UserRepository;
+import com.example.streak.user.model.UserDTO;
 import com.example.streak.user.model.UserLoginRequest;
 import com.example.streak.user.model.UserPasswordRequest;
 import com.example.streak.user.model.UserRegisterRequest;
+import com.example.streak.user.service.UserConverter;
 import com.example.streak.user.service.UserService;
 import com.example.streak.work.db.WorkEntity;
 import jakarta.servlet.http.HttpSession;
@@ -28,9 +31,10 @@ import static com.example.streak.utils.Encrypt.encrypt;
 public class UserOpenApiController {
     private final UserRepository userRepository;
     private final UserService userService;
+    private final UserConverter userConverter;
 
     @PostMapping("/login")
-    public String login(
+    public Api<UserDTO> login(
             @Valid
             @RequestBody
             UserLoginRequest userLoginRequest,
@@ -59,7 +63,7 @@ public class UserOpenApiController {
         userRepository.save(user);
         httpSession.setAttribute("USER", user.getId());
 
-        return "YES";
+        return Api.OK(userConverter.toDTO(user));
     }
 
     @PostMapping("/register")

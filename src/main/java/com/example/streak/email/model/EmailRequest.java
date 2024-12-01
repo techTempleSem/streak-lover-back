@@ -15,4 +15,8 @@ public class EmailRequest {
     private String email;
 
     private String type;
+
+    private String title;
+
+    private String context;
 }

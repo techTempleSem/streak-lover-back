@@ -10,6 +10,9 @@ public class UserConverter {
         return UserDTO.builder()
                 .name(userEntity.getName())
                 .createdAt(userEntity.getCreatedAt())
+                .workCount(userEntity.getWorkCount())
+                .state(userEntity.getState())
+                .alertTime(userEntity.getAlertTime())
                 .build();
     }
 }

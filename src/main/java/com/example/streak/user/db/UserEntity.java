@@ -1,7 +1,9 @@
 package com.example.streak.user.db;
 
 import com.example.streak.firebase.db.FirebaseEntity;
+import com.example.streak.user.db.enums.UserState;
 import com.example.streak.work.db.WorkEntity;
+import com.example.streak.work.db.enums.WorkState;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
@@ -33,6 +35,12 @@ public class UserEntity {
 
     private LocalDateTime createdAt;
 
+    @Column(columnDefinition = "VARCHAR(45)")
+    @Enumerated(EnumType.STRING)
+    private UserState state;
+
+    private Integer workCount;
+
     @OneToMany
     @JoinColumn(name="user_id")
     private List<WorkEntity> work;
@@ -40,4 +48,6 @@ public class UserEntity {
     @OneToMany
     @JoinColumn(name="user_id")
     private List<FirebaseEntity> firebase;
+
+    private String alertTime;
 }

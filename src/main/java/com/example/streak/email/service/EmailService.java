@@ -46,11 +46,15 @@ public class EmailService {
 
         try {
             MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, false, "UTF-8");
+            log.info("{}",emailRequest);
             mimeMessageHelper.setTo(emailRequest.getEmail());
-            if (emailRequest.getType()=="email"){
+            if (Objects.equals(emailRequest.getType(), "email")){
                 mimeMessageHelper.setSubject("스트릭 서비스 회원가입 메일입니다");
-            } else if(emailRequest.getType()=="password") {
+            } else if(Objects.equals(emailRequest.getType(), "password")) {
                 mimeMessageHelper.setSubject("스트릭 서비스 임시 비밀번호 메일입니다");
+            } else if(Objects.equals(emailRequest.getType(), "inquiry")) {
+                mimeMessageHelper.setSubject("[스트릭 서비스 문의] "+emailRequest.getTitle());
+                code = emailRequest.getContext();
             }
             mimeMessageHelper.setText(setContext(emailRequest.getType(), code), true);
             javaMailSender.send(mimeMessage);
