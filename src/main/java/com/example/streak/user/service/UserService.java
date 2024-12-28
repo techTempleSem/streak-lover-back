@@ -113,7 +113,11 @@ public class UserService {
         if(nowTime>=1430) nowTime -= 1440;
         int finalNowTime = nowTime;
         userEntityList.forEach((user) -> {
-            String[] hour = user.getAlertTime().split(":");
+            String alertTime = user.getAlertTime();
+            if(Objects.equals(alertTime, "알림 안씀")){
+                return;
+            }
+            String[] hour = alertTime.split(":");
             int setTime = Integer.parseInt(hour[0])*60+Integer.parseInt(hour[1]);
             log.info("{}",setTime);
             log.info("{}",finalNowTime);
@@ -123,6 +127,7 @@ public class UserService {
             Hibernate.initialize(user.getWork());
             List<WorkEntity> workEntityList = user.getWork();
             boolean isAlert = workEntityList.stream().anyMatch((work)->{
+                log.info("{}",streakBusiness.isValidExtend(work.getId()));
                 return streakBusiness.isValidExtend(work.getId());
             });
             if(isAlert){

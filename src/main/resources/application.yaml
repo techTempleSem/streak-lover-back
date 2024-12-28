@@ -21,7 +21,7 @@ spring:
     hibernate:
       ddl-auto: validate
   datasource:
-    url: jdbc:mysql://localhost:3306/streak?useSSL=false&useUnicode=true&allowPublicKeyRetrieval=true
+    url: ${db.url}
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: root
+    username: ${db.username}
     password: ${db.password}

@@ -41,7 +41,7 @@ public class WorkApiController {
         log.info("===");
         Long id = (Long)(httpSession.getAttribute("USER"));
         Optional<UserEntity> userEntity = userRepository.findById(id);
-        if(userEntity.isEmpty()) return null;
+        if(userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
 
         return workService.extendStreak(id, workExtendRequest.getId());
     }
@@ -56,7 +56,7 @@ public class WorkApiController {
     ) throws Exception {
         Long id = (Long)(httpSession.getAttribute("USER"));
         Optional<UserEntity> userEntity = userRepository.findById(id);
-        if(userEntity.isEmpty()) return "등록이 실패하였습니다.";
+        if(userEntity.isEmpty()) throw new ApiException(ErrorCode.UNAUTHORIZED);
 
         return workService.register(id, workRegisterRequest);
     }

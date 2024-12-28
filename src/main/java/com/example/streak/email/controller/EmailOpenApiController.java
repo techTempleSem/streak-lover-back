@@ -1,5 +1,7 @@
 package com.example.streak.email.controller;
 
+import com.example.streak.common.error.ErrorCode;
+import com.example.streak.common.exception.ApiException;
 import com.example.streak.email.db.EmailAuthEntity;
 import com.example.streak.email.model.EmailAuthRequest;
 import com.example.streak.email.model.EmailInquiryRequest;
@@ -25,7 +27,7 @@ public class EmailOpenApiController {
             EmailRequest emailRequest
     ){
         if(!emailService.checkValid(emailRequest.getEmail())){
-            return "이미 있는 계정입니다.";
+            throw new ApiException(ErrorCode.BAD_REQUEST, "이미 있는 계정입니다.");
         }
         emailService.sendMail(emailRequest);
         return "";

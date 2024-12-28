@@ -4,12 +4,14 @@ import com.example.streak.streak.db.StreakEntity;
 import com.example.streak.streak.db.StreakRepository;
 import com.example.streak.work.db.WorkEntity;
 import com.example.streak.work.db.WorkRepository;
+import com.example.streak.work.db.enums.WorkState;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -27,12 +29,22 @@ public class StreakBusiness {
     }
 
     public boolean isValidExtend(Long workId){
+        log.info("id : {}",workId);
+        LocalDate now = LocalDate.now();
+        log.info("now : {}",now);
+        WorkEntity work = workRepository.findById(workId).get();
+        if(work.getState() == WorkState.DELETE){
+            return false;
+        }
+        if((work.getDayWeek() & (1<<(now.getDayOfWeek().getValue() % 7)))==0){
+            return false;
+        }
         Optional<StreakEntity> _streak = streakRepository.findFirstByWorkIdOrderByMonthDesc(workId);
+        List<StreakEntity> _test = streakRepository.findAllByWorkIdOrderByMonthDesc(workId);
         if(_streak.isEmpty()) {
             return true;
         }
         StreakEntity streak = _streak.get();
-        LocalDate now = LocalDate.now();
         int month = now.getYear() * 100 + now.getMonthValue();
         if(streak.getMonth() != month){
             return true;

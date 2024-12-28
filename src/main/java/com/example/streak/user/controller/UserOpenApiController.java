@@ -77,7 +77,7 @@ public class UserOpenApiController {
         Optional<UserEntity> user = userRepository.findFirstByName(userRegisterRequest.getName());
 
         if(user.isPresent()){
-            return "이미 있는 계정입니다.";
+            throw new ApiException(ErrorCode.BAD_REQUEST,"이미 있는 계정입니다.");
         } else {
             return userService.register(userRegisterRequest);
         }
@@ -94,7 +94,7 @@ public class UserOpenApiController {
         Optional<UserEntity> user = userRepository.findFirstByName(userPasswordRequest.getEmail());
 
         if(user.isEmpty()){
-            return "없는 계정입니다";
+            throw new ApiException(ErrorCode.BAD_REQUEST,"없는 계정입니다.");
         } else {
             return userService.password(userPasswordRequest, user.get());
         }
